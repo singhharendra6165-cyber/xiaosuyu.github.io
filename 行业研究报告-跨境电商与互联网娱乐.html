@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任务4：行业研究报告 — 跨境电商 & 互联网娱乐行业</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --primary: #1a73e8;
+    --cbe: #e8792b;
+    --ie: #6c3bd6;
+    --bg: #f5f7fa;
+    --card: #fff;
+    --text: #2c3e50;
+    --muted: #8899aa;
+    --border: #e8ecf1;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+  .container { max-width: 1300px; margin: 0 auto; padding: 20px; }
+
+  /* Header */
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 50px 40px; border-radius: 16px; margin-bottom: 30px; text-align: center; }
+  .hero h1 { font-size: 2.4em; margin-bottom: 10px; letter-spacing: 2px; }
+  .hero .sub { font-size: 1.1em; opacity: .75; }
+  .hero .tags { margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .hero .tag { padding: 6px 18px; border-radius: 20px; font-size: .9em; font-weight: 600; }
+  .tag-cbe { background: rgba(232,121,43,.25); color: #ffb380; border: 1px solid rgba(232,121,43,.4); }
+  .tag-ie { background: rgba(108,59,214,.25); color: #c4b0ff; border: 1px solid rgba(108,59,214,.4); }
+
+  /* Section */
+  .section { margin-bottom: 40px; }
+  .section-title { font-size: 1.7em; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+  .section-title .icon { font-size: 1.2em; }
+  .section-desc { color: var(--muted); margin-bottom: 25px; font-size: .95em; }
+
+  /* Cards */
+  .card { background: var(--card); border-radius: 12px; padding: 28px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid var(--border); }
+  .card h3 { font-size: 1.2em; margin-bottom: 16px; color: var(--primary); }
+  .card-cbe { border-left: 4px solid var(--cbe); }
+  .card-cbe h3 { color: var(--cbe); }
+  .card-ie { border-left: 4px solid var(--ie); }
+  .card-ie h3 { color: var(--ie); }
+
+  /* Grid */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .grid2, .grid3, .grid4 { grid-template-columns: 1fr; } }
+
+  /* Stat cards */
+  .stat-card { background: var(--card); border-radius: 12px; padding: 22px 24px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,.05); border: 1px solid var(--border); }
+  .stat-card .value { font-size: 2em; font-weight: 800; }
+  .stat-card .label { color: var(--muted); font-size: .88em; margin-top: 4px; }
+  .stat-card .change { font-size: .85em; margin-top: 2px; }
+  .up { color: #e74c3c; }
+  .down { color: #27ae60; }
+
+  /* Chart wrapper */
+  .chart-wrap { position: relative; width: 100%; margin: 0 auto; }
+  .chart-wrap canvas { width: 100% !important; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: .92em; }
+  th { background: #f0f4f8; text-align: left; padding: 12px 14px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #fafbfc; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; font-family: "SF Mono", "Consolas", "Menlo", monospace; }
+
+  /* Highlight */
+  .highlight { background: linear-gradient(120deg, #fff3cd 0%, #fff3cd 40%); padding: 2px 6px; border-radius: 3px; font-weight: 600; }
+
+  /* Legend */
+  .legend-row { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: .85em; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* Tabs */
+  .tab-nav { display: flex; gap: 0; margin-bottom: 0; }
+  .tab-btn { padding: 12px 28px; border: 1px solid var(--border); background: #f8f9fb; cursor: pointer; font-size: 1em; font-weight: 600; color: var(--muted); transition: .2s; }
+  .tab-btn:first-child { border-radius: 10px 0 0 10px; }
+  .tab-btn:last-child { border-radius: 0 10px 10px 0; }
+  .tab-btn.active { background: var(--cbe); color: #fff; border-color: var(--cbe); }
+  .tab-btn.ie-active.active { background: var(--ie); border-color: var(--ie); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .insight-box { background: #fef9f3; border: 1px solid #f0d9a8; border-radius: 10px; padding: 20px 24px; margin-top: 20px; }
+  .insight-box h4 { color: var(--cbe); margin-bottom: 8px; }
+  .insight-box-ie { background: #f8f4ff; border-color: #d5c8f0; }
+  .insight-box-ie h4 { color: var(--ie); }
+
+  .source { color: var(--muted); font-size: .8em; margin-top: 6px; }
+  .divider { border: none; border-top: 2px solid var(--border); margin: 30px 0; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ========== HERO ========== -->
+<div class="hero">
+  <h1>行业研究报告</h1>
+  <div class="sub">跨境电商 & 互联网娱乐 · 宏观环境与头部企业发展状况</div>
+  <div class="tags">
+    <span class="tag tag-cbe">跨境电商行业</span>
+    <span class="tag tag-ie">互联网娱乐行业</span>
+  </div>
+  <div style="margin-top:16px;opacity:.6;font-size:.85em">数据来源：各公司2025年年报、艾瑞咨询、中国游戏工委、国家广播电视总局 · 截止2026年5月</div>
+</div>
+
+<!-- ====================================================================================== -->
+<!-- PART 1: 跨境电商 -->
+<!-- ====================================================================================== -->
+<div class="section">
+  <div class="section-title"><span class="icon" style="color:var(--cbe)">📦</span> 第一部分：跨境电商行业</div>
+  <div class="section-desc">研究目标行业：跨境出口电商 &nbsp;|&nbsp; 对标企业：安克创新、SHEIN、赛维时代、致欧科技、Temu/拼多多</div>
+
+  <!-- 行业概览统计 -->
+  <div class="grid4">
+    <div class="stat-card">
+      <div class="value" style="color:var(--cbe)">10.4<span style="font-size:.5em">万亿元</span></div>
+      <div class="label">2025年跨境出口电商规模</div>
+      <div class="change up">CAGR 16.4%（2022-2025）</div>
+    </div>
+    <div class="stat-card">
+      <div class="value" style="color:var(--cbe)">3.5<span style="font-size:.5em">万亿元</span></div>
+      <div class="label">2025年跨境电商进出口总额</div>
+      <div class="change up">出口占比约78%</div>
+    </div>
+    <div class="stat-card">
+      <div class="value" style="color:var(--cbe)">33.6<span style="font-size:.5em">%</span></div>
+      <div class="label">B2C占跨境出口电商比重</div>
+      <div class="change up">2017年仅24.1%</div>
+    </div>
+    <div class="stat-card">
+      <div class="value" style="color:var(--cbe)">9.8<span style="font-size:.5em">%</span></div>
+      <div class="label">全球电商CAGR（2020-2024）</div>
+      <div class="change">增长重心转向东南亚/南美</div>
+    </div>
+  </div>
+
+  <br>
+
+  <!-- 市场规模趋势图 -->
+  <div class="card card-cbe">
+    <h3>中国跨境出口电商市场规模趋势（2017-2025）</h3>
+    <div class="chart-wrap" style="max-width:800px"><canvas id="chart_cbe_market"></canvas></div>
+    <div class="source">数据来源：艾瑞咨询、海关总署、华金证券研究所</div>
+  </div>
+
+  <!-- 头部企业营收对比 -->
+  <div class="grid2">
+    <div class="card card-cbe">
+      <h3>头部企业 2025年营收对比（亿元人民币）</h3>
+      <div class="chart-wrap" style="max-height:360px"><canvas id="chart_cbe_revenue"></canvas></div>
+      <div class="source">注：SHEIN、Temu为非上市公司，数据来源于第三方估算</div>
+    </div>
+    <div class="card card-cbe">
+      <h3>头部企业 2025年净利润对比（亿元人民币）</h3>
+      <div class="chart-wrap" style="max-height:360px"><canvas id="chart_cbe_profit"></canvas></div>
+      <div class="source">数据来源：各公司2025年年报</div>
+    </div>
+  </div>
+
+  <!-- 企业详细数据表 -->
+  <div class="card card-cbe">
+    <h3>跨境电商头部企业 2025年核心财务数据一览</h3>
+    <div style="overflow-x:auto">
+    <table>
+      <thead>
+      <tr>
+        <th>企业</th><th>上市情况</th><th>营收（亿元）</th><th>营收增速</th><th>净利润（亿元）</th><th>净利增速</th><th>毛利率</th><th>核心市场</th><th>主营品类</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><strong>安克创新</strong></td>
+        <td>A股（300866）</td>
+        <td class="num">305.14</td>
+        <td class="num">+23.5%</td>
+        <td class="num">25.45</td>
+        <td class="num">+20.4%</td>
+        <td class="num">45.1%</td>
+        <td>全球（海外96%+）</td>
+        <td>充电储能/智能创新/影音</td>
+      </tr>
+      <tr>
+        <td><strong>SHEIN</strong></td>
+        <td>未上市</td>
+        <td class="num">~800<span style="color:#999">*</span></td>
+        <td class="num">~+40%</td>
+        <td class="num">~145<span style="color:#999">*</span></td>
+        <td class="num">—</td>
+        <td class="num">—</td>
+        <td>全球150+国</td>
+        <td>快时尚服饰</td>
+      </tr>
+      <tr>
+        <td><strong>Temu（拼多多）</strong></td>
+        <td>美股（PDD）</td>
+        <td class="num">~650<span style="color:#999">*</span></td>
+        <td class="num">~+90%</td>
+        <td class="num">亏损<span style="color:#999">*</span></td>
+        <td class="num">—</td>
+        <td class="num">—</td>
+        <td>全球80+国</td>
+        <td>全品类低价</td>
+      </tr>
+      <tr>
+        <td><strong>赛维时代</strong></td>
+        <td>A股（301381）</td>
+        <td class="num">118.17</td>
+        <td class="num">+15.0%</td>
+        <td class="num">2.83</td>
+        <td class="num">+32.2%</td>
+        <td class="num">42.7%</td>
+        <td>北美（91%）</td>
+        <td>服饰配饰</td>
+      </tr>
+      <tr>
+        <td><strong>致欧科技</strong></td>
+        <td>A股（301376）</td>
+        <td class="num">87.01</td>
+        <td class="num">+7.1%</td>
+        <td class="num">3.36</td>
+        <td class="num">+0.7%</td>
+        <td class="num">34.5%</td>
+        <td>欧洲（66%）</td>
+        <td>家具家居</td>
+      </tr>
+      <tr>
+        <td><strong>子不语</strong></td>
+        <td>港股（02420）</td>
+        <td class="num">~47</td>
+        <td class="num">~+40%</td>
+        <td class="num">~2.7</td>
+        <td class="num">+78.6%</td>
+        <td class="num">—</td>
+        <td>北美/欧洲</td>
+        <td>服饰鞋履</td>
+      </tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="source">* 标注为非上市公司，数据来源于第三方机构估算（ECDB、路透社等）&nbsp;|&nbsp;数据截止：各公司2025财年年报</div>
+  </div>
+
+  <!-- 竞争格局 -->
+  <div class="card card-cbe">
+    <h3>跨境电商竞争格局（2025）</h3>
+    <div class="chart-wrap" style="max-width:700px"><canvas id="chart_cbe_compete"></canvas></div>
+  </div>
+
+  <!-- 行业洞察 -->
+  <div class="insight-box">
+    <h4>🔍 跨境电商行业关键洞察</h4>
+    <ul>
+      <li><strong>增长引擎转移</strong>：全球电商增长重心从欧美向东南亚、南美转移，新兴市场电商用户增量成为主要驱动力</li>
+      <li><strong>"四超多强"格局</strong>：Amazon（全球份额第一）、阿里系（速卖通+Lazada）、Temu、SHEIN构成第一梯队；TikTok Shop以社交电商模式异军突起</li>
+      <li><strong>关税冲击下的模式转型</strong>：美国取消800美元小包免税，头部企业加速从"空运直邮"转向"海运+海外仓本地备货"，本地发货占比已近90%</li>
+      <li><strong>品牌化是核心趋势</strong>：从铺货模式→品牌模式转变，安克创新/赛维时代等已跑通品牌矩阵路径；拼多多启动千亿"新拼姆"计划做自营品牌</li>
+      <li><strong>AI赋能全链路</strong>：AI选品、AI客服、AI营销、AI供应链管理成为跨境电商新基建</li>
+    </ul>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ====================================================================================== -->
+<!-- PART 2: 互联网娱乐 -->
+<!-- ====================================================================================== -->
+<div class="section">
+  <div class="section-title"><span class="icon" style="color:var(--ie)">🎮</span> 第二部分：互联网娱乐行业</div>
+  <div class="section-desc">研究目标行业：互联网娱乐（游戏+短视频+长视频+微短剧） &nbsp;|&nbsp; 对标企业：腾讯、网易、快手、B站、字节跳动</div>
+
+  <!-- 行业概览统计 -->
+  <div class="grid4">
+    <div class="stat-card">
+      <div class="value" style="color:var(--ie)">1.55<span style="font-size:.5em">万亿元</span></div>
+      <div class="label">网络视听行业总收入（2025）</div>
+      <div class="change up">同比 +5.22%</div>
+    </div>
+    <div class="stat-card">
+      <div class="value" style="color:var(--ie)">3,508<span style="font-size:.5em">亿元</span></div>
+      <div class="label">国内游戏市场销售收入</div>
+      <div class="change up">同比 +7.68%，创历史新高</div>
+    </div>
+    <div class="stat-card">
+      <div class="value" style="color:var(--ie)">4,795<span style="font-size:.5em">亿元</span></div>
+      <div class="label">短视频/直播收入（2025）</div>
+      <div class="change up">同比 +11.28%</div>
+    </div>
+    <div class="stat-card">
+      <div class="value" style="color:var(--ie)">205<span style="font-size:.5em">分钟</span></div>
+      <div class="label">网民日均观看视听节目</div>
+      <div class="change">微短剧用户6.62亿</div>
+    </div>
+  </div>
+
+  <br>
+
+  <!-- 游戏市场细分 -->
+  <div class="grid2">
+    <div class="card card-ie">
+      <h3>2025年中国游戏市场细分收入（亿元）</h3>
+      <div class="chart-wrap" style="max-height:360px"><canvas id="chart_ie_game"></canvas></div>
+    </div>
+    <div class="card card-ie">
+      <h3>游戏出海：自研游戏海外收入趋势</h3>
+      <div class="chart-wrap" style="max-height:360px"><canvas id="chart_ie_overseas"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 网络视听行业结构 -->
+  <div class="card card-ie">
+    <h3>2025年网络视听行业收入结构（亿元）</h3>
+    <div class="chart-wrap" style="max-width:700px"><canvas id="chart_ie_media"></canvas></div>
+  </div>
+
+  <!-- 头部企业对比 -->
+  <div class="grid2">
+    <div class="card card-ie">
+      <h3>头部企业 2025年营收对比（亿元人民币）</h3>
+      <div class="chart-wrap" style="max-height:400px"><canvas id="chart_ie_revenue"></canvas></div>
+      <div class="source">注：字节跳动为非上市公司，数据来源于媒体报道</div>
+    </div>
+    <div class="card card-ie">
+      <h3>头部企业 2025年净利润对比（亿元人民币）</h3>
+      <div class="chart-wrap" style="max-height:400px"><canvas id="chart_ie_profit"></canvas></div>
+      <div class="source">注：字节跳动净利润为IFRS口径估算值；B站首次实现全年盈利</div>
+    </div>
+  </div>
+
+  <!-- 企业详细数据表 -->
+  <div class="card card-ie">
+    <h3>互联网娱乐头部企业 2025年核心财务数据一览</h3>
+    <div style="overflow-x:auto">
+    <table>
+      <thead>
+      <tr>
+        <th>企业</th><th>上市情况</th><th>营收（亿元）</th><th>营收增速</th><th>净利润（亿元）</th><th>净利增速</th><th>毛利率</th><th>核心业务</th><th>关键亮点</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><strong>腾讯</strong></td>
+        <td>港股（00700）</td>
+        <td class="num">7,518</td>
+        <td class="num">+14%</td>
+        <td class="num">2,248</td>
+        <td class="num">+16%</td>
+        <td class="num">56%</td>
+        <td>游戏+社交+广告</td>
+        <td>国际游戏+33%，毛利率56%</td>
+      </tr>
+      <tr>
+        <td><strong>字节跳动</strong></td>
+        <td>未上市</td>
+        <td class="num">~13,020<span style="color:#999">*</span></td>
+        <td class="num">~+20%</td>
+        <td class="num">~630<span style="color:#999">*</span></td>
+        <td class="num">—</td>
+        <td class="num">—</td>
+        <td>短视频+电商+AI</td>
+        <td>TikTok Shop GMV增速70%</td>
+      </tr>
+      <tr>
+        <td><strong>快手</strong></td>
+        <td>港股（01024）</td>
+        <td class="num">1,428</td>
+        <td class="num">+12.5%</td>
+        <td class="num">186</td>
+        <td class="num">+21.4%</td>
+        <td class="num">55%</td>
+        <td>短视频+直播+电商</td>
+        <td>可灵AI月收入2000万美元</td>
+      </tr>
+      <tr>
+        <td><strong>网易</strong></td>
+        <td>美股/港股</td>
+        <td class="num">1,126</td>
+        <td class="num">+6.9%</td>
+        <td class="num">338</td>
+        <td class="num">+13.8%</td>
+        <td class="num">64%</td>
+        <td>游戏（82%）+音乐+教育</td>
+        <td>游戏重回双位数增长</td>
+      </tr>
+      <tr>
+        <td><strong>哔哩哔哩</strong></td>
+        <td>美股/港股</td>
+        <td class="num">304</td>
+        <td class="num">+13%</td>
+        <td class="num">12</td>
+        <td class="num">扭亏为盈</td>
+        <td class="num">36.6%</td>
+        <td>视频+游戏+直播</td>
+        <td><span class="highlight">首次全年盈利</span></td>
+      </tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="source">* 字节跳动为非上市公司，营收约1860亿美元按汇率7.0折算；净利润为IFRS口径。数据来源：各公司2025财年年报、公开媒体报道</div>
+  </div>
+
+  <!-- 游戏市场细分趋势 -->
+  <div class="card card-ie">
+    <h3>2025年游戏细分市场增速对比</h3>
+    <div class="chart-wrap" style="max-width:700px"><canvas id="chart_ie_growth"></canvas></div>
+    <div class="source">数据来源：中国游戏工委《2025年中国游戏产业报告》</div>
+  </div>
+
+  <!-- 行业洞察 -->
+  <div class="insight-box insight-box-ie">
+    <h4>🔍 互联网娱乐行业关键洞察</h4>
+    <ul>
+      <li><strong>短视频/直播是最大增长引擎</strong>：以近4,800亿元收入和超11%增速领跑，占网络视听总收入31%</li>
+      <li><strong>微短剧异军突起</strong>：市场规模突破500亿元，首次超越电影票房；海外上线237款微短剧应用</li>
+      <li><strong>游戏出海持续强劲</strong>：自研游戏海外收入204.55亿美元，连续六年超千亿元人民币；《黑神话：悟空》成文化出海标杆</li>
+      <li><strong>小程序游戏爆发</strong>：收入535亿元（+34.39%），成为增长最快的游戏细分赛道</li>
+      <li><strong>AI全面渗透</strong>：腾讯资本开支792亿创历史新高，快手可灵AI年化收入2.4亿美元，字节AI投入超1500亿元</li>
+      <li><strong>B站盈利拐点</strong>：首次实现全年GAAP盈利，标志着Z世代社区平台商业模式的可行性验证</li>
+    </ul>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ====================================================================================== -->
+<!-- PART 3: 对比与结论 -->
+<!-- ====================================================================================== -->
+<div class="section">
+  <div class="section-title"><span class="icon">📊</span> 第三部分：两行业对比与职业启示</div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>行业生命周期对比</h3>
+      <div class="chart-wrap" style="max-height:350px"><canvas id="chart_compare_life"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>关键指标对比矩阵</h3>
+      <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>维度</th><th style="color:var(--cbe)">跨境电商</th><th style="color:var(--ie)">互联网娱乐</th></tr></thead>
+        <tbody>
+        <tr><td>市场规模（2025）</td><td class="num">~10.4万亿元</td><td class="num">~1.55万亿元</td></tr>
+        <tr><td>CAGR（近3年）</td><td class="num">16.4%</td><td class="num">~8%</td></tr>
+        <tr><td>发展阶段</td><td>成长期→成熟期过渡</td><td>成熟期+新兴赛道爆发</td></tr>
+        <tr><td>核心壁垒</td><td>供应链+品牌+物流</td><td>内容+技术+用户</td></tr>
+        <tr><td>技术驱动</td><td>AI+自动化+物流科技</td><td>AI大模型+引擎+推荐</td></tr>
+        <tr><td>国际化程度</td><td>极高（天然跨境）</td><td>高（游戏出海领军）</td></tr>
+        <tr><td>头部企业净利率</td><td>2%-8%</td><td>4%-30%</td></tr>
+        <tr><td>政策风险</td><td>关税/贸易壁垒</td><td>版号/内容监管</td></tr>
+        <tr><td>就业机会</td><td>运营/供应链/品牌</td><td>研发/产品/AI</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>对职业规划的建议</h3>
+    <div class="grid2">
+      <div style="padding:16px;background:#fff7f0;border-radius:10px">
+        <h4 style="color:var(--cbe);margin-bottom:10px">📦 选择跨境电商行业 →</h4>
+        <ul style="font-size:.93em">
+          <li>行业仍处高速增长期（CAGR 16%+），增量机会大</li>
+          <li>适合方向：品牌运营、供应链管理、数据分析、AI产品经理</li>
+          <li>核心能力：外语、跨文化沟通、数据驱动决策、供应链理解</li>
+          <li>关注企业：安克创新（品牌标杆）、TikTok Shop（社交电商新贵）</li>
+          <li>⚠️ 风险：地缘政治和关税政策不确定性高</li>
+        </ul>
+      </div>
+      <div style="padding:16px;background:#f6f0ff;border-radius:10px">
+        <h4 style="color:var(--ie);margin-bottom:10px">🎮 选择互联网娱乐行业 →</h4>
+        <ul style="font-size:.93em">
+          <li>成熟稳健+新兴赛道（微短剧/AI/游戏出海）多点开花</li>
+          <li>适合方向：游戏策划/开发、AI工程师、内容运营、数据分析</li>
+          <li>核心能力：技术功底、创意审美、用户洞察、AI工具链</li>
+          <li>关注企业：腾讯（生态帝国）、字节（AI激进投入）、快手（AI+短视频）</li>
+          <li>⚠️ 风险：版号限制、内容监管趋严、用户增长见顶</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ====================================================================================== -->
+<!-- 数据来源 -->
+<!-- ====================================================================================== -->
+<div class="card" style="background:#fafbfc">
+  <h3>数据来源与参考文献</h3>
+  <div class="grid2" style="font-size:.85em;color:var(--muted)">
+    <div>
+      <strong style="color:var(--text)">行业报告：</strong>
+      <ul>
+        <li>艾瑞咨询《2025年中国跨境电商SaaS市场行业报告》</li>
+        <li>中国游戏工委《2025年中国游戏产业报告》</li>
+        <li>国家广播电视总局《2025年全国广播电视行业统计公报》</li>
+        <li>海关总署跨境电商进出口统计数据</li>
+      </ul>
+    </div>
+    <div>
+      <strong style="color:var(--text)">企业财报/数据：</strong>
+      <ul>
+        <li>安克创新（300866）2025年年度报告</li>
+        <li>赛维时代（301381）2025年年度报告</li>
+        <li>致欧科技（301376）2025年年度报告</li>
+        <li>腾讯控股（00700.HK）2025年全年业绩</li>
+        <li>网易（NTES）2025年全年财报</li>
+        <li>快手（01024.HK）2025年年度业绩</li>
+        <li>哔哩哔哩（09626.HK）2025年年度财报</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ====================================================================================== -->
+<!-- CHARTS JS -->
+<!-- ====================================================================================== -->
+<script>
+// Color palette
+const CBE_MAIN = '#e8792b';
+const CBE_LIGHT = '#f5c89a';
+const CBE_BG = 'rgba(232,121,43,0.12)';
+const IE_MAIN = '#6c3bd6';
+const IE_LIGHT = '#b09ef0';
+const IE_BG = 'rgba(108,59,214,0.12)';
+
+Chart.defaults.font.family = "-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(30,30,50,0.9)';
+Chart.defaults.plugins.tooltip.padding = 12;
+
+// ============ 跨境电商：市场规模趋势 ============
+new Chart(document.getElementById('chart_cbe_market'), {
+  type: 'line',
+  data: {
+    labels: ['2017','2018','2019','2020','2021','2022','2023','2024','2025E'],
+    datasets: [{
+      label: 'B2B',
+      data: [1.67,2.01,2.43,2.55,2.88,3.37,3.80,4.28,4.60],
+      borderColor: '#95a5a6',
+      backgroundColor: 'rgba(149,165,166,0.1)',
+      fill: true, tension: 0.3,
+    },{
+      label: 'B2C',
+      data: [0.53,0.69,0.90,1.14,1.55,1.99,2.61,3.12,3.80],
+      borderColor: CBE_MAIN,
+      backgroundColor: CBE_BG,
+      fill: true, tension: 0.3,
+    },{
+      label: '合计',
+      data: [2.20,2.70,3.33,3.69,4.43,5.36,6.41,7.40,8.40],
+      borderColor: '#e74c3c',
+      borderDash: [5,3],
+      borderWidth: 2,
+      fill: false, tension: 0.3,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: { display: true, text: '单位：万亿元人民币', font: { size: 11 }, color: '#889' },
+      legend: { position: 'bottom' }
+    },
+    scales: {
+      y: { title: { display: true, text: '万亿元' }, min: 0 }
+    }
+  }
+});
+
+// ============ 跨境电商：头部企业营收 ============
+new Chart(document.getElementById('chart_cbe_revenue'), {
+  type: 'bar',
+  data: {
+    labels: ['安克创新','SHEIN*','Temu*','赛维时代','致欧科技','子不语'],
+    datasets: [{
+      label: '营收（亿元）',
+      data: [305, 800, 650, 118, 87, 47],
+      backgroundColor: [CBE_MAIN, '#e67e22', '#f39c12', CBE_LIGHT, '#fad7b3', '#fdebd0'],
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: { x: { title: { display: true, text: '亿元人民币' } } }
+  }
+});
+
+// ============ 跨境电商：头部企业净利润 ============
+new Chart(document.getElementById('chart_cbe_profit'), {
+  type: 'bar',
+  data: {
+    labels: ['安克创新','致欧科技','赛维时代','子不语'],
+    datasets: [{
+      label: '净利润（亿元）',
+      data: [25.45, 3.36, 2.83, 2.69],
+      backgroundColor: ['#27ae60', '#2ecc71', '#82e0aa', '#abebc6'],
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { title: { display: true, text: '亿元人民币' } } }
+  }
+});
+
+// ============ 跨境电商：竞争格局（雷达图） ============
+new Chart(document.getElementById('chart_cbe_compete'), {
+  type: 'radar',
+  data: {
+    labels: ['全球覆盖', '品牌力', '供应链效率', '价格竞争力', '技术/数据', '资本实力'],
+    datasets: [{
+      label: 'Amazon', data: [95,90,85,70,90,95],
+      borderColor: '#ff9900', backgroundColor: 'rgba(255,153,0,0.1)',
+    },{
+      label: 'Temu', data: [70,55,80,95,85,90],
+      borderColor: '#e74c3c', backgroundColor: 'rgba(231,76,60,0.08)',
+    },{
+      label: 'SHEIN', data: [80,75,95,90,70,65],
+      borderColor: '#2ecc71', backgroundColor: 'rgba(46,204,113,0.08)',
+    },{
+      label: 'TikTok Shop', data: [65,80,60,75,95,85],
+      borderColor: '#3498db', backgroundColor: 'rgba(52,152,219,0.08)',
+    },{
+      label: '阿里系', data: [85,70,85,80,80,90],
+      borderColor: '#f39c12', backgroundColor: 'rgba(243,156,18,0.08)',
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'bottom' } },
+    scales: { r: { min: 0, max: 100, ticks: { stepSize: 20, display: false } } }
+  }
+});
+
+// ============ 互联网娱乐：游戏市场细分 ============
+new Chart(document.getElementById('chart_ie_game'), {
+  type: 'doughnut',
+  data: {
+    labels: ['移动游戏 2571亿','客户端游戏 782亿','小程序游戏 535亿','主机游戏 84亿','网页游戏 43亿'],
+    datasets: [{
+      data: [2571, 782, 535, 84, 43],
+      backgroundColor: [IE_MAIN, '#8e6ce0', '#b09ef0', '#d5c8f0', '#e8e0f8'],
+      borderWidth: 2,
+      borderColor: '#fff',
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 16, font: { size: 11 } } }
+    }
+  }
+});
+
+// ============ 互联网娱乐：游戏出海趋势 ============
+new Chart(document.getElementById('chart_ie_overseas'), {
+  type: 'line',
+  data: {
+    labels: ['2019','2020','2021','2022','2023','2024','2025'],
+    datasets: [{
+      label: '自研游戏海外收入（亿美元）',
+      data: [115.9,154.5,180.1,173.5,163.7,185.6,204.6],
+      borderColor: IE_MAIN,
+      backgroundColor: IE_BG,
+      fill: true, tension: 0.3,
+      pointRadius: 5, pointBackgroundColor: IE_MAIN,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { title: { display: true, text: '亿美元' }, min: 100 }
+    }
+  }
+});
+
+// ============ 互联网娱乐：网络视听结构 ============
+new Chart(document.getElementById('chart_ie_media'), {
+  type: 'bar',
+  data: {
+    labels: ['短视频/直播', '广告收入', '付费/版权', '技术服务/游戏等', '其他'],
+    datasets: [{
+      label: '收入（亿元）',
+      data: [4795, 3166, 1868, 1854, 1781],
+      backgroundColor: [IE_MAIN, '#8e6ce0', '#b09ef0', '#d5c8f0', '#e8e0f8'],
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { title: { display: true, text: '亿元人民币' } }
+    }
+  }
+});
+
+// ============ 互联网娱乐：头部企业营收 ============
+new Chart(document.getElementById('chart_ie_revenue'), {
+  type: 'bar',
+  data: {
+    labels: ['腾讯','字节*','快手','网易','B站'],
+    datasets: [{
+      label: '营收（亿元）',
+      data: [7518, 13020, 1428, 1126, 304],
+      backgroundColor: [IE_MAIN, '#8e6ce0', '#b09ef0', '#d5c8f0', '#e8e0f8'],
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: {
+      x: {
+        title: { display: true, text: '亿元人民币' },
+        type: 'logarithmic',
+        ticks: { callback: v => v >= 100 ? v/10000 >= 1 ? (v/10000)+'万亿' : v : v }
+      }
+    }
+  }
+});
+
+// ============ 互联网娱乐：头部企业净利润 ============
+new Chart(document.getElementById('chart_ie_profit'), {
+  type: 'bar',
+  data: {
+    labels: ['腾讯','字节*','网易','快手','B站'],
+    datasets: [{
+      label: '净利润（亿元）',
+      data: [2248, 630, 338, 186, 12],
+      backgroundColor: ['#27ae60','#2ecc71','#82e0aa','#abebc6','#d5f5e3'],
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: {
+        title: { display: true, text: '亿元人民币' },
+        type: 'logarithmic',
+        ticks: { callback: v => v >= 10 ? v : v }
+      }
+    }
+  }
+});
+
+// ============ 游戏细分市场增速 ============
+new Chart(document.getElementById('chart_ie_growth'), {
+  type: 'bar',
+  data: {
+    labels: ['主机游戏','小程序游戏','电竞游戏','客户端游戏','移动游戏','二次元手游','网页游戏'],
+    datasets: [{
+      label: '同比增长率',
+      data: [86.33, 34.39, 18.96, 14.97, 7.92, -3.64, -6.74],
+      backgroundColor: data => data.raw > 20 ? '#27ae60' : data.raw > 0 ? IE_MAIN : '#e74c3c',
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ctx.raw + '%' } }
+    },
+    scales: {
+      y: { title: { display: true, text: '%' }, ticks: { callback: v => v+'%' } }
+    }
+  }
+});
+
+// ============ 行业生命周期对比 ============
+new Chart(document.getElementById('chart_compare_life'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: '跨境电商',
+      data: [{x:60, y:30, r:22, name:'跨境电商整体'},
+             {x:70, y:35, r:14, name:'Temu'},
+             {x:65, y:32, r:12, name:'SHEIN'},
+             {x:55, y:28, r:12, name:'安克创新'}],
+      backgroundColor: CBE_BG,
+      borderColor: CBE_MAIN,
+      borderWidth: 2,
+    },{
+      label: '互联网娱乐',
+      data: [{x:80, y:22, r:22, name:'互联网娱乐整体'},
+             {x:85, y:25, r:14, name:'腾讯'},
+             {x:70, y:18, r:12, name:'快手'},
+             {x:55, y:20, r:10, name:'B站'},
+             {x:60, y:38, r:12, name:'微短剧'}],
+      backgroundColor: IE_BG,
+      borderColor: IE_MAIN,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom' },
+      tooltip: {
+        callbacks: {
+          label: ctx => ctx.raw.name + ' (成熟度:' + ctx.raw.x + ', 增速:' + ctx.raw.y + '%)'
+        }
+      }
+    },
+    scales: {
+      x: { title: { display: true, text: '市场成熟度 →' }, min: 40, max: 100,
+           ticks: { callback: v => v===40?'导入期':v===60?'成长期':v===80?'成熟期':v===100?'衰退期':'' } },
+      y: { title: { display: true, text: '年增速 (%)' }, min: 0, max: 50 }
+    }
+  }
+});
+
+</script>
+
+</body>
+</html>
